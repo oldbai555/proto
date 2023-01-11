@@ -2,7 +2,7 @@
 syntax = "proto3";
 
 // 指定golang包名
-option go_package = "github.com/oldbai555/lbconst";
+option go_package = "github.com/oldbai555/bgg/lbconst";
 
 // 指定默认包名
 package lbconst;

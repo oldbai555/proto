@@ -2,7 +2,7 @@
 syntax = "proto3";
 
 // 指定golang包名
-option go_package = "github.com/oldbai555/lbuser";
+option go_package = "github.com/oldbai555/bgg/lbuser";
 
 // 指定默认包名
 package lbuser;

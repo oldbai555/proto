@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/oldbai555/lbfacebook";
+option go_package = "github.com/oldbai555/bgg/lbfacebook";
 
 package hwfacebook;
 
