@@ -1,0 +1,73 @@
+// 指定proto版本
+syntax = "proto3";
+
+// 指定golang包名
+option go_package = "github.com/oldbai555/lbuser";
+
+// 指定默认包名
+package lbuser;
+
+import "validate.proto";
+
+// 定义 lbuser 服务
+service lbuser {
+    // @desc: 登录
+    rpc Login(LoginReq)returns(LoginRsp){}
+
+    // @desc: 登出
+    rpc Logout(LogoutReq)returns(LogoutRsp){}
+
+    // @desc: 获取登录用户的信息
+    rpc GetLoginUser(GetLoginUserReq)returns(GetLoginUserRsp){
+    };
+}
+
+enum ErrCode {
+    Nil = 0;
+    // 30000 - 40000
+    ErrUserNotFound = 30001;
+    ErrPasswordInvalid = 30002;
+}
+
+message ModelUser{
+    uint64 id = 1;
+    int32  created_at = 2;
+    int32  updated_at = 3;
+    int32  deleted_at = 4;
+
+    string username = 5;
+    string password = 6;
+
+    string avatar = 7;
+    string nickname = 8;
+    string email = 9;
+    string github = 10;
+    string desc = 11;
+}
+
+message LoginReq{
+    string username = 1 [(validate.rules).string = {min_len: 6, max_len: 12}];
+    string password = 2 [(validate.rules).string = {min_len: 6, max_len: 20}];
+}
+
+message LoginRsp{
+    string sid = 1;
+}
+
+message LogoutReq{
+    string sid = 1;
+}
+
+message LogoutRsp{
+}
+
+message GetLoginUserReq{
+}
+
+message GetLoginUserRsp{
+    string avatar = 1;
+    string nickname = 2;
+    string email = 3;
+    string github = 4;
+    string desc = 5;
+}

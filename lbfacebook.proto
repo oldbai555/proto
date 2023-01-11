@@ -1,0 +1,1673 @@
+syntax = "proto3";
+
+option go_package = "github.com/oldbai555/lbfacebook";
+
+package hwfacebook;
+
+// @hw: service
+service hwfacebook {
+
+
+    // 获取的是个人主页
+    rpc GetUserPage (GetUserPageReq) returns (GetUserPageRsp) {};
+
+    // 通过 token 拿到主页信息,按传入的 access_token 来查询公共主页的信息,这边拿不到公共主页的头像那些信息
+    rpc GetPubPage (GetPubPageReq) returns (GetPubPageRsp) {};
+
+
+    //拿到和这个公共主页聊天的用户信息
+    rpc GetMsgSender (GetMsgSenderReq) returns (GetMsgSenderRsp) {};
+    
+    // 拿到和这个公共主页关联的 Instagram 账号信息
+    rpc AuthInstagram(AuthInstagramReq)returns(AuthInstagramRsp) {};
+    
+    // 通过 token 拿到公共主页信息
+    rpc AuthPageList (AuthPageListReq) returns (AuthPageListRsp) {};
+    
+    // 授权用户信息 短 token 换长 token
+    rpc AuthUser (AuthUserReq) returns (AuthUserRsp) {};
+    
+    // 订阅webhook回调
+    rpc PageSubscribedApps (PageSubscribedAppsReq) returns (PageSubscribedAppsRsp) {};
+
+    rpc CheckTokenState (CheckTokenStateReq) returns (CheckTokenStateRsp) {};
+
+    rpc PageCallback (PageCallbackReq) returns (RawRsp) {};
+    
+    rpc InstagramCallback (InstagramCallbackReq) returns (RawRsp) {};
+
+    // 发送消息 https://developers.facebook.com/docs/graph-api/reference/page/messages/
+    rpc SendMessage (SendMessageReq) returns (SendMessageRsp) {
+
+    };
+    
+    // 拿到消息的具体内容
+    rpc GetMessage(GetMessageReq) returns (GetMessageRsp) {
+
+    }
+    
+    rpc GetMessageAttachment(GetMessageAttachmentReq) returns (GetMessageAttachmentRsp) {}
+    
+    rpc GetInsUser (GetInsUserReq) returns (GetInsUserRsp) {};
+
+    rpc SendComment (SendCommentReq) returns (SendCommentRsp) {};
+    
+    rpc GetComment (GetCommentReq) returns (GetCommentRsp) {};
+    
+    rpc GetPagePost (GetPagePostReq) returns (GetPagePostRsp) {};
+}
+
+enum ErrCode {
+    Success = 0;
+    // 612000 - 613000
+    ErrUserPageAuthNotFound = 612000;
+    ErrPubPageAuthFound = 612001;
+    ErrTokenCannotBeUsed = 612002;// 授权信息已过期,请重新授权
+    ErrPageRequestLimitReached = 612003;// 使用频率过高,请稍后重试
+    ErrInstagramAuthFound = 612004;
+}
+
+// 回调类型
+enum CallbackType{
+    CallbackTypeNil = 0;
+    CallBackTypePage = 1;
+}
+
+// 可用的 Messenger 开放平台字段
+// https://developers.facebook.com/docs/messenger-platform/webhooks
+enum CbMessengerField{
+    CbPageFieldNil = 0;
+    CbPageFieldMessageDeliveries = 1;// message_deliveries 当由您的企业发送的消息被交付给客户时，将发送通知。仅适用于Messenger对话。
+    CbPageFieldMessageEchoes = 2;// message_echoes 当您的企业发送消息时，将发送通知。仅适用于Messenger对话。对于Instagram消息会话，消息webhook将被触发。
+    CbPageFieldMessageReactions = 3;// message_reactions 当客户对您的企业发送的消息作出响应时，将发送通知。
+    CbPageFieldMessageReads = 4;// message_reads 当客户读取您的企业发送的消息时，将发送通知，用于Messenger对话。参见messaging_seen查看Instagram消息对话。
+    CbPageFieldMessages = 5;// messages 当您的企业从任何会话入口点收到来自客户的消息时，将发送通知。对于Instagram消息，当你的Instagram专业账户发送了消息，也会发送通知，因为message_echoes不支持Instagram消息。
+
+    CbPageFieldMessagingAccountLinking = 6;// messaging_account_linking 当客户链接或取消其Messenger帐户与您的企业的链接时，将发送通知。仅适用于Messenger对话。
+    CbPageFieldMessagingFeedback = 7;// messaging_feedback 当有人为您的业务提交反馈时，将发送通知。仅适用于Messenger对话。
+    CbPageFieldMessagingGamePlays = 8;// messaging_game_plays 当玩家玩完一轮即时游戏时，会发送通知。仅适用于Messenger对话。
+    CbPageFieldMessagingHandovers = 9;// messaging_handovers 当在移交协议期间发生更改时，将发送通知
+    CbPageFieldMessagingOptins = 10;// messaging_optins 当客户单击Messenger插件、使用客户匹配接受消息请求或选择通过复选框插件接收消息时，将发送通知。仅适用于Messenger对话。
+    CbPageFieldMessagingPolicyEnforcement = 11;// messaging_policy_enforcement 当策略实施警告已发送或策略实施操作已在与Page关联的应用程序上执行时，将发送通知。
+
+    CbPageFieldMessagingPostbacks = 12;// messaging_postbacks 当客户单击回传按钮、开始按钮或Messenger对话的持久菜单项、Icebreaker选项或Instagram消息对话的通用模板按钮时，将发送通知。
+    CbPageFieldMessagingReferrals = 13;// messaging_referrals 跟随带有引用参数的m.me链接 点击Messenger对话广告 从客户聊天插件开始或恢复对话。
+    CbPageFieldMessagingSeen = 14;// messaging_seen 当客户读到您的企业发送的消息时，将发送一个通知，用于Instagram Messaging会话。有关Messenger对话，请参阅messaging_reads。
+    CbPageFieldStandby = 15;// standby 在切换协议期间，当应用程序的会话空闲时，会发送一个通知
+}
+
+// 附件类型
+enum CbAttachmentType{
+    CbAttachmentTypeNil = 0;
+    CbAttachmentTypeAudio = 1;// audio
+    CbAttachmentTypeFile = 2;// file
+    CbAttachmentTypeImage = 3;// image
+    CbAttachmentTypeVideo = 4;// video
+    CbAttachmentTypeFallback = 5;// fallback
+    CbAttachmentTypeTemplate = 6;// template
+}
+
+// 账户连接状态 看文档理解为在线状态
+enum CbAccountLinkingStatus{
+    CbAccountLinkingStatusNil = 0;
+    CbAccountLinkingStatusLinked = 1;// linked
+    CbAccountLinkingStatusUnlinked = 2;// unlinked
+}
+
+// 消息模板类型
+enum CbTemplateType{
+    CbTemplateTypeNil = 0;
+    CbTemplateTypeGeneric = 1;// generic
+    CbTemplateTypeMedia = 2;// media
+    CbTemplateTypeButton = 3;// button
+    CbTemplateTypeReceipt = 4;// receipt
+}
+
+// 模板的媒体类型
+enum CbTemplateMediaType{
+    CbTemplateMediaTypeNil = 0;
+    CbTemplateMediaTypeImage = 1;// image
+    CbTemplateMediaTypeVideo = 2;// video
+}
+
+// 模板的按钮类型
+enum CbTemplateButtonType{
+    CbTemplateButtonTypeNil = 0;
+    CbTemplateButtonTypeWebUrl = 1;// web_url
+    CbTemplateButtonTypePostback = 2;// postback 回传按钮
+    CbTemplateButtonTypePhoneNumber = 3;// phone_number 呼叫按钮
+    CbTemplateButtonTypeGamePlay = 4;// game_play 游戏按钮
+    CbTemplateButtonTypeAccountLink = 5;// account_link 登录按钮
+    CbTemplateButtonTypeAccountUnlink = 6;// account_unlink 退出登录按钮
+}
+
+enum WebviewHeightRatioType{
+    WebviewHeightRatioTypeNil = 0;
+    WebviewHeightRatioTypeCompact = 1; // compact
+    WebviewHeightRatioTypeTall = 2; // tall
+    WebviewHeightRatioTypeFull = 3; // full
+}
+
+enum WebviewShareButtonType{
+    WebviewShareButtonTypeNil = 0;
+    WebviewShareButtonTypeHide = 1;// hide
+}
+
+//心情的行为,类似于点赞和取消点赞
+enum CbReactionActionType{
+    CbReactionActionTypeNil = 0;
+    CbReactionActionTypeReact = 1;// react
+    CbReactionActionTypeUnreact = 2;// unreact
+}
+
+// 推荐源
+enum CbReferralSource{
+    CbReferralSourceNil = 0;
+    CbReferralSourceADS = 1;// ADS
+    CbReferralSourceSHORTLINK = 2; // SHORTLINK
+    CbReferralSourceCUSTOMER_CHAT_PLUGIN = 3; // CUSTOMER_CHAT_PLUGIN
+}
+
+// 推荐类型
+enum CbReferralType{
+    CbReferralSourceTypeNil = 0;
+    CbReferralSourceTypeOPEN_THREAD = 1;// OPEN_THREAD
+}
+
+// 快捷回复 内容类型
+enum QuickReplyContentType{
+    QuickReplyContentTypeNil = 0;
+    QuickReplyContentTypeLocation = 1;//LOCATION
+    QuickReplyContentTypeUserPhoneNumber = 2;//USER_PHONE_NUMBER
+    QuickReplyContentTypeUserEmail = 3;//USER_EMAIL
+    QuickReplyContentTypeUserCity = 4;//USER_CITY
+    QuickReplyContentTypeUserBirthday = 5;//USER_BIRTHDAY
+    QuickReplyContentTypeUserState = 6;//USER_STATE
+    QuickReplyContentTypeUserZipCode = 7;//USER_ZIP_CODE
+    QuickReplyContentTypeOpenCamera = 8;//OPEN_CAMERA
+    QuickReplyContentTypeOpenGallery = 9;//OPEN_GALLERY
+    QuickReplyContentTypeRecordAudio = 10;//RECORD_AUDIO
+    QuickReplyContentTypePoll = 11;//POLL
+    QuickReplyContentTypeText = 12;//TEXT
+    QuickReplyContentTypeOpenNative = 13;//OPEN_NATIVE
+    QuickReplyContentTypeSticker = 14;//STICKER
+    QuickReplyContentTypeOpenApp = 15;//OPEN_APP
+    QuickReplyContentTypeP2pPayment = 16;//P2P_PAYMENT
+    QuickReplyContentTypeTransportation = 17;//TRANSPORTATION
+    QuickReplyContentTypeCreateEvent = 18;//CREATE_EVENT
+    QuickReplyContentTypeGIF = 19;//GIF
+}
+
+// 通知类型
+enum NotificationType{
+    NotificationTypeNil = 0;
+    NotificationTypeREGULAR = 1;//REGULAR
+    NotificationTypeSILENT_PUSH = 2;//SILENT_PUSH
+    NotificationTypeNO_PUSH = 3;//NO_PUSH
+}
+
+
+enum MessageTagType{
+    MessageTagTypeNil = 0;
+    MessageTagTypeUser = 1;// user
+    MessageTagTypePage = 2;// page
+    MessageTagTypeGroup = 3;// group
+}
+
+enum EntityAtTextRangeType{
+    EntityAtTextRangeTypeNil = 0;
+    EntityAtTextRangeTypeUser = 1;// user
+    EntityAtTextRangeTypePage = 2;// page
+    EntityAtTextRangeTypeEvent = 3;// event
+    EntityAtTextRangeTypeGroup = 4;// group
+    EntityAtTextRangeTypeApplication = 5;// application
+}
+
+enum MediaType{
+    MediaTypeNil = 0;
+    MediaTypePhoto = 1; // photo
+    MediaTypeVideo = 2;// video
+    MediaTypeLink = 3;// link
+}
+
+enum StoryAttachmentType{
+    StoryAttachmentTypeNil = 0;
+    StoryAttachmentTypeAlbum = 1; //album,
+    StoryAttachmentTypeAnimatedImageAutoplay = 2;//animated_image_autoplay
+    StoryAttachmentTypeCheckin = 3;//checkin
+    StoryAttachmentTypeCoverPhoto = 4;//cover_photo
+    StoryAttachmentTypeEvent = 5;//event
+    StoryAttachmentTypeLink = 6;//link
+    StoryAttachmentTypeMultiple = 7;//multiple
+    StoryAttachmentTypeMusic = 8;//music
+    StoryAttachmentTypeNote = 9;//note
+    StoryAttachmentTypeOffer = 10;//offer
+    StoryAttachmentTypePhoto = 11;//photo
+    StoryAttachmentTypeProfileMedia = 12;//profile_media
+    StoryAttachmentTypeStatus = 13;//status
+    StoryAttachmentTypeVideo = 14;//video
+    StoryAttachmentTypeVideoAutoplay = 15;//video_autoplay
+}
+
+enum ChangeValueItem{
+    ChangeValueItemNil = 0;
+    ChangeValueItemAlbum = 1;//album
+    ChangeValueItemAddress = 2;//address
+    ChangeValueItemComment = 3;//comment
+    ChangeValueItemConnection = 4;//connection
+    ChangeValueItemCoupon = 5;//coupon
+    ChangeValueItemEvent = 6;//event
+    ChangeValueItemExperience = 7;//experience
+    ChangeValueItemGroup = 8;//group
+    ChangeValueItemGroupMessage = 9;//group_message
+    ChangeValueItemInterest = 10;//interest
+    ChangeValueItemLike = 11;//like
+    ChangeValueItemLink = 12;//link
+    ChangeValueItemMention = 13;//mention
+    ChangeValueItemMilestone = 14;//milestone
+    ChangeValueItemNote = 15;//note
+    ChangeValueItemPage = 16;//page
+    ChangeValueItemPicture = 17;//picture
+    ChangeValueItemPlatformStory = 18;//platform-story
+    ChangeValueItemPhoto = 19;//photo
+    ChangeValueItemPhotoAlbum = 20;//photo-album
+    ChangeValueItemPost = 21;//post
+    ChangeValueItemProfile = 22;//profile
+    ChangeValueItemQuestion = 23;//question
+    ChangeValueItemRating = 24;//rating
+    ChangeValueItemReaction = 25;//reaction
+    ChangeValueItemRelationshipStatus = 26;//relationship-status
+    ChangeValueItemShare = 27;//share
+    ChangeValueItemStatus = 28;//status
+    ChangeValueItemStory = 29;//story
+    ChangeValueItemTimeline = 30;//timeline
+    ChangeValueItemCover = 31;//cover
+    ChangeValueItemTag = 32;//tag
+    ChangeValueItemVideo = 33;//video
+}
+
+enum ChangeValueItemVerb{
+    ChangeValueItemVerbNil = 0;
+    ChangeValueItemVerbAdd = 1;//add
+    ChangeValueItemVerbBlock = 2;//block
+    ChangeValueItemVerbEdit = 3;//edit
+    ChangeValueItemVerbEdited = 4;//edited
+    ChangeValueItemVerbDelete = 5;//delete
+    ChangeValueItemVerbFollow = 6;//follow
+    ChangeValueItemVerbHide = 7;//hide
+    ChangeValueItemVerbMute = 8;//mute
+    ChangeValueItemVerbRemove = 9;//remove
+    ChangeValueItemVerbUnblock = 10;//unblock
+    ChangeValueItemVerbUnHide = 11;//unhide
+    ChangeValueItemVerbUpdate = 12;//update
+}
+
+enum CbReactionType{
+    CbReactionTypeNil = 0;
+    CbReactionTypeSmile = 1;// smile
+    CbReactionTypeAngry = 2;// angry
+    CbReactionTypeSad = 3;// sad
+    CbReactionTypeWow = 4;// wow
+    CbReactionTypeLove = 5;// love
+    CbReactionTypeLike = 6;// like
+    CbReactionTypeDislike = 7;// dislike
+    CbReactionTypeOther = 8;// other
+}
+
+// SubscribedFields 订阅的字段
+enum SubscribedFields{
+    SubscribedFieldsNil = 0;
+    SubscribedFieldsFeed = 1;
+    SubscribedFieldsMessage_deliveries = 2;
+    SubscribedFieldsMessage_echoes = 3;
+    SubscribedFieldsMessage_reactions = 4;
+    SubscribedFieldsMessage_reads = 5;
+    SubscribedFieldsMessages = 6;
+    SubscribedFieldsMessaging_referrals = 7;
+}
+
+// 消息类型
+enum FaceBookMessageType {
+    FaceBookMessageTypeNil = 0;
+    FaceBookMessageTypeUpdate = 1; //  标准消息 UPDATE 主动发出且并非用于回复已收到消息的消息。其中包括在 24 小时内标准消息时间窗内发送的推广性消息和非推广性消息。
+    FaceBookMessageResponse = 2; //  私信回复 RESPONSE 用于回复已收到消息的消息。其中包括在 24 小时标准消息时间窗内发送的推广性消息和非推广性消息。例如，在用户询问预约确认或状态更新情况时，可以使用此标签回复。
+    FaceBookMessageTag = 3; //   消息标签 MESSAGE_TAG 属于非推广性消息的消息，而且是在 24 小时标准消息时间窗过后使用消息标签发出。此类消息必须符合此标签允许的用例。
+}
+
+// 标签消息
+enum FaceBookTagMessageType {
+    FaceBookTagMessageTypeNil = 0;
+    FaceBookTagMessageTypeAccountUpdate = 1; // ACCOUNT_UPDATE 对于发送给客户的非定期消息，其中包含对客户应用程序或帐户的更改。
+    FaceBookTagMessageTypeConfirmedEventUpdate = 2; // CONFIRMED_EVENT_UPDATE 用于提醒或更新客户已注册的活动（已购买门票）。可以为即将发生的事件和正在进行的事件发送消息。
+    FaceBookTagMessageTypeCustomerFeedback = 3;// CUSTOMER_FEEDBACK 用于发送给客户的消息，其中包含客户反馈模板。该消息可以在客户最后一条消息后的 7 天内发送。
+    FaceBookTagMessageTypeHumanAgent = 4;// HUMAN_AGENT 用于从人工代理向客户发送的消息，以响应客户的查询。该消息可以在客户最后一条消息后的 7 天内发送。
+    FaceBookTagMessageTypePostPurchaseUpdate = 5;// POST_PURCHASE_UPDATE 用于发送给客户的消息，其中包含有关客户最近购买的更新。
+}
+
+// 表情(心情)类型
+enum ReactionType{
+    ReactionTypeNil = 0;
+    ReactionTypeSmile = 1;// smile
+    ReactionTypeAngry = 2;// angry
+    ReactionTypeSad = 3;// sad
+    ReactionTypeWow = 4;// wow
+    ReactionTypeLove = 5;// love
+    ReactionTypeLike = 6;// like
+    ReactionTypeDislike = 7;// dislike
+    ReactionTypeOther = 8;// other
+}
+
+enum ChangeValueVerb{
+    ChangeValueVerbNil = 0;
+    ChangeValueVerbAdd = 1;//add
+    ChangeValueVerbBlock = 2;//block
+    ChangeValueVerbEdit = 3;//edit
+    ChangeValueVerbEdited = 4;//edited
+    ChangeValueVerbDelete = 5;//delete
+    ChangeValueVerbFollow = 6;//follow
+    ChangeValueVerbHide = 7;//hide
+    ChangeValueVerbMute = 8;//mute
+    ChangeValueVerbRemove = 9;//remove
+    ChangeValueVerbUnblock = 10;//unblock
+    ChangeValueVerbUnHide = 11;//unhide
+    ChangeValueVerbUpdate = 12;//update
+}
+
+// 发送者的行为
+enum SenderActionType{
+    SenderActionTypeNil = 0;
+    SenderActionTypeMarkSeen = 1;// MARK_SEEN 表示您已收到客户的消息
+    SenderActionTypeReact = 2;// REACT 表示您已对客户的消息做出反应
+    SenderActionTypeTypingOff = 3;// TYPING_OFF 关闭打字指示器
+    SenderActionTypeTypingOn = 4;// TYPING_ON 指示您正在键入对客户消息的响应.20 秒后或发送响应后自动关闭
+    SenderActionTypeUnreact = 5;// UNREACT 表示您已删除对客户消息的反应
+}
+
+// 分页
+message Paging{
+    Cursors cursors = 1;
+}
+
+message Cursors{
+    string before = 1;
+    string after = 2;
+}
+
+// 公共主页收到消息,进行消息推送
+message PageMessageMqMsg{
+    // CbMessengerField 类型，用于区分是表情消息还是标准消息
+    uint32 cb_messenger_field = 1;
+
+    // 消息编号
+    string mid = 2;
+
+    // 是否由企业主动发消息,简单点：true 我们发消息，false 我们收消息
+    bool is_echo = 3;
+
+    // 发信人的ID编号,常为个人用户的 user_sn
+    string sender_sn = 4;
+
+    // 收信人的ID编号,常为公共主页的 page_sn
+    string recipient_sn = 5;
+
+    // 时间戳 示例：1458692752478
+    uint64 timestamp = 6;
+
+    // 消息文本
+    string text = 7;
+
+    // 对此消息回复的消息编号 (mid) 的参照
+    ReplyTo reply_to = 8;
+
+    // 包含附件数据的数组
+    repeated Attachment attachments = 9;
+
+    // 表情
+    Reaction reaction = 10;
+}
+
+// 公共主页的消息状态,进行消息状态推送
+message PageMessageStateMqMsg{
+    // CbMessengerField
+    uint32 cb_messenger_field = 1;
+
+    // 发信人的ID编号,常为个人用户的 user_sn
+    string sender_sn = 2;
+
+    // 收信人的ID编号,常为公共主页的 page_sn
+    string recipient_sn = 3;
+
+    // 时间戳 示例：1458692752478
+    uint64 timestamp = 4;
+
+    // 在此时间戳之前发送的所有消息都将被传递或 已读
+    int64 watermark = 5;
+
+    // 包含已传递消息的消息id的数组。字段可能不存在
+    repeated string mids = 6;
+}
+
+// facebook 公共主页帖子评论回调
+message PageCommentsMqMsg{
+    // 评论类型
+    enum Type{
+        TypeNil = 0; // 未知类型,例如贴图 回调不会返回，需要自己去拿贴图链接
+        TypeText = 1;// 文本
+        TypeImg = 2;// 图片
+        TypeVideo = 3;// 视频
+        TypeReaction = 4;// 表情
+    }
+
+    // 公共主页ID
+    string page_sn = 1;
+
+    // 操作的类型 例如新增评论 删除评论
+    // ChangeValueItemVerb
+    string verb = 2;
+
+    // 帖子ID
+    string post_sn = 3;
+
+    // 帖子链接
+    string post_link = 4;
+
+    // 评论人ID
+    string customer_sn = 5;
+
+    // 评论人名称
+    string customer_name = 6;
+
+    // 评论时间 时间戳 秒级
+    uint32 created_at = 7;
+
+    // 评论ID
+    string comment_sn = 8;
+
+    // 父编号 , 会为 post_sn 或 comment_sn ;
+    // 判断方式： parent_sn == post_sn 就为一级评论,否则为盖楼评论
+    string parent_sn = 9;
+
+    // 评论内容类型 根据 PageCommentsMqMsg.Type 来区分是文本还是 URL
+    uint32 type = 10;
+
+    // 评论内容 根据 PageCommentsMqMsg.Type 来区分是是什么内容
+    string message = 11;
+}
+
+// Ins收到消息,进行消息推送
+message InstagramMessageMqMsg{
+    // CbMessengerField 类型，用于区分是表情消息还是标准消息
+    uint32 cb_messenger_field = 1;
+
+    // 消息编号
+    string mid = 2;
+
+    // 是否由企业主动发消息,简单点：true 我们发消息，false 我们收消息
+    bool is_echo = 3;
+
+    // 发信人的ID编号
+    string sender_sn = 4;
+
+    // 收信人的ID编号
+    string recipient_sn = 5;
+
+    // 时间戳 示例：1458692752478
+    uint64 timestamp = 6;
+
+    // 消息文本
+    string text = 7;
+
+    // 对此消息回复的消息编号 (mid) 的参照
+    ReplyTo reply_to = 8;
+
+    // 包含附件数据的数组
+    repeated Attachment attachments = 9;
+
+    // 表情
+    Reaction reaction = 10;
+}
+
+// Ins的消息状态,进行消息状态推送
+message InstagramMessageStateMqMsg{
+    // CbMessengerField
+    uint32 cb_messenger_field = 1;
+
+    // 发信人的ID编号,常为个人用户的 user_sn
+    string sender_sn = 2;
+
+    // 收信人的ID编号,常为公共主页的 page_sn
+    string recipient_sn = 3;
+
+    // 时间戳 示例：1458692752478
+    uint64 timestamp = 4;
+
+    // 在此时间戳之前发送的所有消息都将被传递或 已读
+    int64 watermark = 5;
+
+    // 包含已传递消息的消息id的数组。字段可能不存在
+    repeated string mids = 6;
+}
+
+
+// https://developers.facebook.com/docs/pages/access-tokens
+// 用户(个人)主页的授权信息
+message ModelUserAuth{
+    uint64 id = 1;
+    uint32 created_at = 2;
+    uint32 updated_at = 3;
+    uint32 deleted_at = 4;
+
+    // 个人主页的 user_id
+    string user_sn = 5;
+
+    // 长期用户口令
+    string long_lived_user_access_token = 6;
+
+    string token_type = 7;
+
+    // 此访问口令的过期时间戳。
+    uint32 expired_at = 10;
+
+    // 应用对用户数据访问权限的过期时间戳。
+    uint32 data_access_expires_at = 11;
+
+    string graph_domain = 12;
+
+    string app_id = 13;
+
+    // 此访问口令所对应的应用程序名称。
+    string application = 14;
+}
+
+// 公共主页授权信息
+message ModelPageAuth{
+    uint64 id = 1;
+    uint32 created_at = 2;
+    uint32 updated_at = 3;
+    uint32 deleted_at = 4;
+
+    // ModelUserAuth.user_sn
+    string user_sn = 5;
+
+    // 公共主页的 page_id
+    string page_sn = 6;
+
+    string name = 7;
+
+    string access_token = 8;
+
+    uint32 expires_at = 9;
+
+    // 应用对用户数据访问权限的过期时间戳。
+    uint32 data_access_expires_at = 10;
+
+    string app_id = 11;
+
+    // 此访问口令所对应的应用程序名称。
+    string application = 12;
+}
+
+// Instagram 信息
+message ModelInstagramAuth{
+    uint64 id = 1;
+    uint32 created_at = 2;
+    uint32 updated_at = 3;
+    uint32 deleted_at = 4;
+
+    // 公共主页的 page_id
+    string page_sn = 5;
+
+    // Instagram 的 id
+    string ins_sn = 6;
+
+    // 此处的 token 为 ModelUserAuth.long_lived_user_access_token
+    string access_token = 7;
+}
+
+// ======================================= oauth ==============================================
+// debug 测试 token 什么时候过期
+// https://developers.facebook.com/docs/graph-api/reference/v15.0/debug_token#nopublishdeleting
+message DebugToken{
+    message GranularScope{
+        string scope = 1;
+    }
+    // 此访问口令所对应的应用程序编号。
+    string app_id = 1;
+
+    // PAGE or USER
+    string type = 2;
+
+    // 此访问口令所对应的应用程序名称。
+    string application = 3;
+
+    // 应用对用户数据访问权限的过期时间戳。
+    uint32 data_access_expires_at = 4;
+
+    // 此访问口令的过期时间戳。
+    uint32 expires_at = 5;
+
+    // 访问口令是否仍然有效。
+    bool is_valid = 6;
+
+    // 此访问口令的发布时间戳。
+    uint32 issued_at = 7;
+
+    // type = PAGE 的时候才有，此值为 page_id
+    // 对于模拟访问口令，此口令所包含的页面编号。
+    string profile_id = 8;
+
+    // 此访问口令所对应的用户编号。
+    string user_id = 9;
+
+    // 用户通过此访问口令授予应用的权限清单。
+    repeated string scopes = 10;
+
+    // 用户通过此访问口令授予应用的细化权限清单。如果权限适用于所有，则不会显示目标。
+    repeated GranularScope granular_scopes = 11;
+}
+
+message GetDebugTokenRsp{
+    DebugToken data = 1;
+}
+
+// 自己有权限的公共主页信息
+// https://developers.facebook.com/docs/graph-api/reference/page/
+message Page{
+    string id = 1;
+
+    string name = 2;
+
+    string access_token = 3;
+
+    repeated Category category_list = 4;
+
+    repeated string tasks = 5;
+}
+
+// 主页的分类
+message Category {
+    string id = 1;
+
+    string name = 2;
+}
+
+// ======================================= message-page-callback ==============================================
+
+// 回调的数据体
+message Entry{
+    // 主页ID
+    string id = 1;
+
+    // 更新时间(epoch Time，以毫秒为单位)
+    int64 time = 2;
+
+    // 包含一个消息传递对象的数组。注意，即使这是一个数组，它也只包含一个消息传递对象。
+    repeated Messaging messaging = 3;
+
+    repeated Change changes = 4;
+}
+
+// 订阅 例如feed 的回调
+// https://developers.facebook.com/docs/graph-api/webhooks/reference/page/#message_reactions
+message Change {
+    //订阅的具体字段
+    string field = 1;
+
+    //订阅变动的值
+    Value value = 2;
+}
+
+// 订阅变动的值
+message Value {
+    uint32 edited_time = 1;
+
+    Sender from = 2;
+
+    PagePost post = 3;
+
+    bool is_hidden = 4;
+
+    string link = 5;
+
+    string message = 6;
+
+    string photo = 7;
+
+    repeated string photo_ids = 8;
+
+    repeated string photos = 9;
+
+    string post_id = 10;
+
+    string story = 11;
+
+    string title = 12;
+
+    string video = 13;
+
+    uint32 video_flag_reason = 14;
+
+    string action = 15;
+
+    string album_id = 16;
+
+    string comment_id = 17;
+
+    uint32 created_time = 18;
+
+    string event_id = 19;
+
+    // ChangeValueItem
+    string item = 20;
+
+    string open_graph_story_id = 21;
+
+    string parent_id = 22;
+
+    string photo_id = 23;
+
+    string reaction_type = 24;
+
+    uint32 published = 25;
+
+    string recipient_id = 26;
+
+    string share_id = 27;
+
+    // ChangeValueItemVerb
+    string verb = 28;
+
+    string video_id = 29;
+}
+
+// 主页帖子
+message PagePost{
+    string id = 1;
+    string created_time = 2;
+    string message = 3;
+    string story = 4;
+    string status_type = 5;
+    bool is_published = 6;
+    string updated_time = 7;
+    string permalink_url = 8;
+    string promotion_status = 9;
+    Comment comments = 10;
+    Object from = 11;
+}
+
+// 消息传递对象
+message Messaging{
+    // 发送者
+    Sender sender = 1;
+
+    // 收信人
+    Recipient recipient = 2;
+
+    // 时间戳 示例：1458692752478
+    uint64 timestamp = 3;
+
+    // 消息内容
+    ReceiveMessage message = 4;
+
+    // 传递成功信息
+    Delivery delivery = 5;
+
+    // 表情
+    Reaction reaction = 6;
+
+    // 已读
+    Read read = 7;
+}
+
+//消息标签
+message MessageTag{
+    // 标记的个人主页编号。
+    string id = 1;
+
+    // 标记中所用的文本。
+    string name = 2;
+
+    // 表明所标记个人主页的类型。
+    // MessageTagType
+    string type = 3;
+
+    // 标记文本的第一个字符在 message 中所处的位置（用 unicode 代码点衡量）。
+    string offset = 4;
+
+    // 起始位置之后构成标记的 unicode 代码点数量。
+    string length = 5;
+}
+
+// 个人主页 对 hwfacebook.User 的一个属性提取
+// https://developers.facebook.com/docs/graph-api/reference/v15.0/profile
+message Profile{
+    string id = 1;
+
+    string name = 2;
+
+    string email = 3;
+}
+
+// 发送者
+message Sender {
+    // 向您的企业发送消息的人的page范围的ID
+    string id = 1;
+
+    // 触发 Webhook 事件的用户 user_ref。此属性仅适用于聊天插件的 Webhook 事件。
+    string user_ref = 2;
+
+    string name = 3;
+}
+
+// 收信人
+message Recipient{
+    message Name{
+        string first_name = 1;
+
+        string last_name = 2;
+    }
+
+    // 你Facebook页面的ID
+    string id = 1;
+
+    // 用于复选框插件和客户聊天插件。
+    string user_ref = 2;
+
+    // 用于私人回复引用要回复的访问者帖子。
+    string post_id = 3;
+
+    // 用于私人回复引用要回复的帖子评论。
+    string comment_id = 4;
+
+    Name name = 5;
+
+    string phone_number = 6;
+
+    string player_id = 7;
+
+    string one_time_notif_token = 8;
+
+    string notification_messages_token = 9;
+
+    string login_id = 10;
+}
+
+// 通用对象,可以是用户,公共主页,ins 账号信息
+// https://developers.facebook.com/docs/graph-api/reference/user/ 用户文档
+message Object {
+    //头像图片
+    message Picture {
+        PictureData data = 1;
+    }
+
+    message PictureData{
+        uint32 height = 1;
+        bool is_silhouette = 2;
+        string url = 3;
+        uint32 width = 4;
+    }
+
+    message InstagramBusinessAccount{
+        string id = 1;
+    }
+
+    string id = 1;
+
+    // The person's first name
+    string first_name = 2;
+
+    // The person's last name
+    string last_name = 3;
+
+    // The person's middle name
+    string middle_name = 4;
+
+    // The person's full name
+    string name = 5;
+
+    // The person's name formatted to correctly handle Chinese, Japanese, or Korean ordering
+    string name_format = 6;
+
+    // 头像
+    // The person's profile picture
+    Picture picture = 7;
+
+    string short_name = 8;
+
+    // 需要单独获取权限 user_gender
+    // The gender selected by this person, male or female. If the gender is set to a custom value, this value will be based off of the preferred pronoun; it will be omitted if the preferred pronoun is neutral
+    string gender = 9;
+
+    string email = 10;
+
+    InstagramBusinessAccount instagram_business_account = 11;
+
+    // ins 头像,检查page对象不会返回
+    string profile_picture_url = 12;
+
+    // ins 有账号返回
+    string username = 13;
+}
+
+// 回调收到的消息
+message ReceiveMessage {
+    // 消息编号
+    string mid = 1;
+
+    // 消息文本
+    string text = 2;
+
+    // 由发送消息的应用提供的可选自定义数据
+    QuickReply quick_reply = 3;
+
+    // 对此消息回复的消息编号 (mid) 的参照
+    ReplyTo reply_to = 4;
+
+    // 包含附件数据的数组
+    repeated Attachment attachments = 5;
+
+    // 是否由企业主动发消息,简单点：true 我们发消息，false 我们收消息
+    bool is_echo = 9;
+
+    uint64 app_id = 10;
+}
+
+// 回调投递消息响应
+message Delivery{
+    // 包含已传递消息的消息id的数组。字段可能不存在
+    repeated string mids = 1;
+
+    // 在此时间戳之前发送的所有消息都将被传递
+    int64 watermark = 2;
+}
+
+//回调表情包
+message Reaction{
+    // CbReactionType
+    // Text description of the reaction. Possible values: smile, angry, sad, wow, love, like, dislike.other could also be returned in case the emoji based reaction does not match the ones above.
+    string reaction = 1;
+
+    // UTF-8 Emoji . Reference to the emoji corresponding to the reaction.
+    string emoji = 2;
+
+    // CbReactionActionType
+    // Action performed by the user. Possible values: react, unreact
+    string action = 3;
+
+    //	Reference to the Message ID that the user reacted performed the reaction on.
+    string mid = 4;
+}
+
+// 回调已读
+message Read{
+    // All messages that were sent before or at this timestamp were read
+    int64 watermark = 1;
+
+    // instagram 有该参数，page 无
+    string mid = 2;
+}
+
+// 快速回复
+message QuickReply{
+    // 由应用提供的自定义数据
+    Payload payload = 1;
+
+    string title = 2;
+
+    // QuickReplyContentType
+    string content_type = 3;
+}
+
+// 回复
+message ReplyTo{
+    // 对此消息回复的消息编号的参照
+    string mid = 1;
+}
+
+// 附件
+message Attachment{
+    // CbAttachmentType
+    string type = 1;
+
+    Payload payload = 2;
+}
+
+// 附件载荷
+message Payload{
+    // 附件类型的网址。适用于以下附件类型：audio、file、image、video 以及 fallback
+    string url = 1;
+
+    // 附件的标题。适用于以下附件类型：fallback
+    string title = 2;
+
+    // 此贴图的永久编号，例如 369239263222822 引用“赞”贴图。适用于以下附件类型：image（仅当发送贴图时适用）。
+    int64 sticker_id = 3;
+
+    // @ref_to: CbTemplateType
+    string template_type = 4;
+
+    // 模板
+    // Array of a maximum of 100 element objects that describe items in the order. Sort order of the elements is not guaranteed.
+    repeated Template elements = 5;
+
+    // 可选的。设置为true可在Messenger中为模板消息启用本机共享按钮。默认值为false。
+    bool sharable = 6;
+}
+
+// 模板
+message Template{
+    string title = 1;
+
+    string subtitle = 2;
+
+    string image_url = 3;
+
+    Button default_action = 4;
+
+    repeated Button buttons = 5;
+
+    // CbTemplateMediaType
+    string media_type = 6;
+
+    string attachment_id = 7;
+
+    // 可选的。购买物品的数量。
+    int64 quantity = 8;
+
+    // 商品的价格。对于免费物品，“0”是允许的。
+    int64 price = 9;
+
+    // 可选的。物品价格的货币。
+    int64 currency = 10;
+}
+
+// 按钮
+// https://developers.facebook.com/docs/messenger-platform/reference/buttons
+message Button{
+    message GameMetadata{
+        string player_id = 1;
+
+        string context_id = 2;
+    }
+
+    // CbTemplateButtonType
+    string type = 1;
+
+    string url = 2;
+
+    string title = 3;
+
+    // 如果是手机号：Format must have "+" prefix followed by the country code, area code and local number. For example,
+    string payload = 4;
+
+    // WebviewHeightRatioType
+    // Height of the Webview. Valid values: compact, tall, full. Defaults to full.
+    string webview_height_ratio = 5;
+
+    // Must be true if using Messenger Extensions.
+    bool messenger_extensions = 6;
+
+    // The URL to use on clients that don't support Messenger Extensions. If this is not defined, the url will be used as the fallback. It may only be specified if messenger_extensions is true.
+    string fallback_url = 7;
+
+    // WebviewShareButtonType
+    // Set to hide to disable the share button in the Webview (for sensitive info). This does not affect any shares initiated by the developer using Extensions.
+    string webview_share_button = 8;
+
+    GameMetadata game_metadata = 9;
+}
+
+message ApiException{
+    message Error{
+        string message = 1;
+
+        string type = 2;
+
+        uint32 code = 3;
+
+        uint32 error_subcode = 4;
+
+        string fbtrace_id = 5;
+    }
+    Error error = 1;
+}
+
+// ======================================= 主页消息相关 ==============================================
+
+// 动态文本
+message DynamicText{
+    string text = 1 ;
+
+    string fallback_text = 2;
+}
+
+//发送消息的信息
+message SendMessageInfo{
+    message Body{
+        string text = 1;
+
+        DynamicText dynamic_text = 2;
+
+        Attachment attachment = 3;
+
+        repeated QuickReply quick_replies = 4;
+
+        string metadata = 5;
+    }
+
+    // 消息的主体
+    Body message = 1;
+
+    // MessagingType
+    // 发送的消息的类型。
+    string messaging_type = 2;
+
+    // default REGULAR
+    // 发送消息时客户收到的推送通知的类型
+    string notification_type = 3;
+
+    // 发件人操作的有效负载
+    string payload = 4;
+
+    // 企业角色的 ID
+    string persona_id = 5;
+    
+    // 接收您消息的客户
+    Recipient recipient = 6;
+
+    // SenderActionType
+    // 向客户显示的操作，用于让客户知道您已经看到并正在处理他们的消息。
+    string sender_action = 7;
+
+    // TagType
+    // 一个标记，允许你的应用在 24 小时消息传递窗口之外向客户发送个性化消息。
+    string tag = 8;
+}
+
+// https://developers.facebook.com/docs/graph-api/reference/v15.0/object/comments
+message SendCommentInfo{
+    string attachment_url = 1;
+    string attachment_share_url = 2;
+    string message = 3;
+    bool is_hidden = 4;
+}
+
+message SendCommentInfoRsp{
+    bool success = 1;
+    string id = 2;
+}
+
+// 评论
+// https://developers.facebook.com/docs/graph-api/reference/v15.0/comment
+message Comment{
+    // 评论编号
+    string id = 1;
+
+    // 附加到评论的链接、视频、贴图或照片
+    StoryAttachment attachment = 2;
+
+    // 浏览者是否可以回复此评论
+    bool can_comment = 3;
+
+    // 浏览者是否可以移除此评论
+    bool can_remove = 4;
+
+    // 浏览者是否可以隐藏此评论。仅公共主页管理员可见
+    bool can_hide = 5;
+
+    // 浏览者是否可以赞此评论
+    bool can_like = 6;
+
+    // 浏览者是否可以给此评论发送私密回复（仅限公共主页浏览者）
+    bool can_reply_privately = 7;
+
+    // 此评论的回复数量
+    uint32 comment_count = 8;
+
+    // 此评论的发表时间
+    string created_time = 9;
+
+    // 此评论的作者
+    Object from = 10;
+
+    // 此评论的点赞数
+    uint32 like_count = 11;
+
+    // 评论文本
+    string message = 12;
+
+    // 在 message 中标记的个人主页数组。
+    repeated MessageTag message_tags = 13;
+
+    // 包含照片或视频的帖子中的评论，包括动态帖子中的评论。否则此字段为空。
+    string object = 14;
+
+    // 适用于评论回复，此评论为回复对象。
+    Comment parent = 15;
+
+    // 适用于有私密回复的评论，让公共主页和评论作者之间进行对话（仅限公共主页浏览者）
+    Conversation private_reply_conversation = 16;
+
+    // 浏览者是否点赞此评论。
+    bool user_likes = 17;
+}
+
+// 对话
+// https://developers.facebook.com/docs/graph-api/reference/v15.0/conversation
+message Conversation{
+    string id = 1;
+
+    string messages = 2;
+
+    Participants participants = 3;
+
+    string updated_time = 4;
+}
+
+// 互动者
+message Participants{
+    string id = 1;
+
+    string email = 2;
+
+    string name = 3;
+
+    string username = 4;
+}
+
+// 评论里携带的故事附件
+// https://developers.facebook.com/docs/graph-api/reference/story-attachment/
+message StoryAttachment{
+    string description = 1;
+
+    repeated EntityAtTextRange description_tags = 2;
+
+    StoryAttachmentMedia media = 3;
+
+    // MediaType
+    string media_type = 4;
+
+    StoryAttachmentTarget target = 5;
+
+    string title = 6;
+
+    // StoryAttachmentType
+    string type = 7;
+
+    string unshimmed_url = 8;
+
+    string url = 9;
+}
+
+// 文本范围内的实体
+// https://developers.facebook.com/docs/graph-api/reference/entity-at-text-range/
+message EntityAtTextRange{
+    string id = 1;
+
+    uint32 length = 2;
+
+    string name = 3;
+
+    string object = 4;
+
+    uint32 offset = 5;
+
+    // @ref_to: EntityAtTextRangeType
+    string type = 6;
+}
+
+// 故事附件媒体
+// https://developers.facebook.com/docs/graph-api/reference/story-attachment-media/
+message StoryAttachmentMedia{
+    Image image = 1;
+
+    string source = 2;
+}
+
+message Image{
+    uint32 height = 1;
+    string src = 2;
+    uint32 width = 3;
+}
+
+// 故事附件目标
+// https://developers.facebook.com/docs/graph-api/reference/story-attachment-target/
+message StoryAttachmentTarget{
+    string id = 1;
+
+    string unshimmed_url = 2;
+
+    string url = 3;
+}
+
+// 获取消息详情
+// https://developers.facebook.com/docs/graph-api/reference/v15.0/message
+message MessageRsp{
+    message RecipientTo{
+        repeated Profile data = 1;
+    }
+
+    // 消息ID
+    string id = 1;
+
+    string created_time = 2;
+
+    // 对话Id
+    string thread_id = 3;
+
+    // 发送者
+    Profile from = 4 ;
+
+    // 收信者
+    RecipientTo to = 5;
+
+    // 消息文本内容
+    string message = 6;
+}
+
+// 获取消息的附件详情
+// https://developers.facebook.com/docs/graph-api/reference/v15.0/message/attachments
+message MessageAttachmentRsp{
+    string id = 1;
+
+    string mime_type = 2;
+
+    string name = 3;
+
+    uint32 size = 4;
+
+    string file_url = 5;
+}
+
+// ======================================= 接口相关 ==============================================
+
+message PageCallbackReq {
+    // 值为 page
+    string object = 1;
+
+    // 具体内容
+    repeated Entry entry = 2;
+}
+
+message InstagramCallbackReq {
+    // 值为 page
+    string object = 1;
+
+    // 具体内容
+    repeated Entry entry = 2;
+}
+
+message GetPubPageReq {
+    // 公共主页 page_id
+    string page_sn = 1;
+}
+
+message GetPubPageRsp {
+    string page_sn = 1;
+
+    string name = 2;
+
+    string picture_url = 3;
+}
+
+message GetUserPageReq {
+    // 个人主页 user_id
+    string user_sn = 1;
+}
+
+message GetUserPageRsp {
+    string user_sn = 1;
+
+    // 头像
+    string picture_url = 2;
+
+    string email = 3;
+
+    string gender = 4;
+
+    string name = 5;
+}
+
+message GetMsgSenderReq {
+    // 公共主页 page_id
+    string page_sn = 1;
+    
+    string sender_sn = 2;
+}
+
+message GetMsgSenderRsp {
+    string customer_sn = 1;
+
+    // 头像
+    string picture_url = 2;
+
+    string email = 3;
+
+    string gender = 4;
+
+    string name = 5;
+}
+
+message AuthInstagramReq {
+    // 公共主页 page_id
+    
+    string page_sn = 1;
+}
+
+message AuthInstagramRsp {
+    bool is_empty = 1;
+
+    string name = 2;
+
+    string picture_url = 3;
+
+    string ins_sn = 4;
+
+    string page_sn = 5;
+}
+
+message AuthPageListReq {
+    // 个人主页的 user_id
+    string user_sn = 1;
+}
+
+message MeAccountsRsp {
+    repeated Page data = 1;
+
+    Paging paging = 2;
+}
+
+message AuthPageListRsp {
+    repeated Page data_list = 1;
+}
+
+message AuthUserReq {
+    // 需要续约的 token
+    string access_token = 1;
+    
+    // 个人主页的 user_id
+    string user_sn = 2;
+
+    // 授权来源域
+    string graph_domain = 3;
+}
+
+message LongLivedUserAccessTokenRsp {
+    // long-lived-user-access-token
+    // 续约成功后的token
+    string access_token = 1;
+
+    string token_type = 2;
+
+    // The number of seconds until the token expires
+    int64 expires_in = 3;
+}
+
+message AuthUserRsp{
+}
+
+message SendMessageReq {
+    enum Type{
+        TypeNil = 0;// default message 消息
+        TypeComment = 1;// 回复帖子评论消息,用Message来回复评论
+        TypeActionType = 2; // 标记您已收到客户的消息
+        TypeIns = 3;// Instagram 消息
+    }
+    
+    // 根据type 来区分是公共主页的 page_sn 还是 ins_sn
+    string account_sn = 1;
+
+    // 文本
+    string text = 2;
+
+    // 附件
+    Attachment attachment = 3;
+
+    // MessagingType
+    // 发送的消息的类型。
+    string messaging_type = 4;
+    
+    // 接收您消息的客户 根据 type 来做区分
+    string customer_sn = 5;
+
+    // 消息类型
+    // SendMessageReq.Type
+    uint32 type = 6;
+
+    // 一个标记，允许你的应用在 24 小时消息传递窗口之外向客户发送个性化消息。
+    string tag = 7;
+
+    // SenderActionType
+    // 向客户显示的操作，用于让客户知道您已经看到并正在处理他们的消息。
+    string sender_action = 8;
+}
+
+message SendMessageRsp {
+    string recipient_id = 1;
+
+    string message_id = 2;
+
+    string attachment_id = 3;
+}
+
+message PageSubscribedAppsReq {
+    //公共主页的 page_id
+    string page_sn = 1;
+
+    //订阅 webhook 字段
+    repeated string subscribed_fields = 2;
+}
+
+message PageSubscribedAppsRsp {
+    bool success = 1;
+}
+
+message CheckTokenStateReq {
+    string user_sn = 1;
+    string page_sn = 2;
+}
+
+message CheckTokenStateRsp {
+    //应用对用户数据访问权限的过期时间戳。
+    uint32 data_access_expires_at = 1;
+
+    //此访问口令的过期时间戳。
+    uint32 expires_at = 2;
+
+    // 访问口令是否仍然有效。
+    bool is_valid = 3;
+}
+
+message GetMessageReq{
+    string page_sn = 1;
+    
+    string mid = 2;
+}
+
+message GetMessageRsp{
+    MessageRsp message = 1;
+}
+
+message GetMessageAttachmentReq{
+    string page_sn = 1;
+
+    string mid = 2;
+}
+
+message GetMessageAttachmentRsp{
+    MessageAttachmentRsp attachment = 1;
+}
+
+message GetInsUserReq {
+    string ins_recipient_sn = 1;
+    
+    string ins_sender_sn = 2;
+}
+
+message GetInsUserRsp {
+    string name = 1;
+    string username = 2;
+    string customer_sn = 3;
+}
+
+message SendCommentReq {
+    enum Type{
+        TypeNil = 0;// 直接评论
+        TypeLikes = 1;// 点赞
+        TypeDelComments = 2;// 删除评论
+        TypeHidden = 3;// 隐藏评论
+        TypeDelLikes = 4;// 取消点赞 只能取消自己点赞
+    }
+    
+    // 公共主页的 page_id
+    string page_sn = 1;
+    
+    // 需要回复的评论
+    string comment_sn = 2;
+
+    // 文本
+    string text = 3;
+
+    // 要添加为照片评论的图片网址。
+    string attachment_url = 4;
+
+    // 要添加为 GIF 动图评论的 GIF 网址。
+    string attachment_share_url = 5;
+
+    uint32 type = 6;
+}
+
+message SendCommentRsp {
+    string msg_id = 1;
+    bool success = 2;
+}
+
+message GetCommentReq {
+    string page_sn = 1;
+    
+    string comment_sn = 2;
+}
+
+message GetCommentRsp {
+    Comment comment = 1;
+}
+
+message GetPagePostReq {
+    string page_sn = 1;
+    
+    string post_sn = 2;
+}
+
+message GetPagePostRsp {
+    PagePost post = 1;
+}
+
+
+message RawReq {
+    bytes buf = 1;
+}
+
+message RawRsp {
+    bytes buf = 1;
+    string content_type = 2; // default is: application/octet-stream
+}

@@ -1,0 +1,38 @@
+// 指定proto版本
+syntax = "proto3";
+
+// 指定golang包名
+option go_package = "github.com/oldbai555/lbconst";
+
+// 指定默认包名
+package lbconst;
+
+// 定义 const 服务
+service lbconst {}
+
+enum ErrCode {
+    Nil = 0;
+    Success = 200;
+    // 20000 - 30000
+    ErrAnInvalidRequest = 20001;  // 无效的请求
+    ErrAnInvalidRsp = 20002;  // 无效的响应
+}
+
+message Page {
+    uint32 limit = 1;
+    uint32 offset = 2;
+    // 总行数
+    uint64 total = 3;
+}
+
+
+message ListOption{
+    message Option{
+        int32 type = 1;
+        string value = 2;
+    }
+    repeated Option options = 1;
+    uint32 limit = 2;
+    uint32 offset = 3;
+    bool skip_count = 4;
+}

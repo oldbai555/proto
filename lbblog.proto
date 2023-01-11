@@ -1,0 +1,257 @@
+// 指定proto版本
+syntax = "proto3";
+
+// 指定golang包名
+option go_package = "github.com/oldbai555/lbblog";
+
+// 指定默认包名
+package lbblog;
+
+import "validate.proto";
+import "lbconst.proto";
+
+// 定义 lbblog 服务
+service lbblog {
+
+    rpc GetArticleList(GetArticleListReq)returns(GetArticleListRsp){}
+
+    rpc GetArticle(GetArticleReq)returns(GetArticleRsp){}
+
+    rpc UpdateArticle(UpdateArticleReq)returns(UpdateArticleRsp){}
+
+    rpc DelArticle(DelArticleReq)returns(DelArticleRsp){}
+
+    rpc AddArticle(AddArticleReq)returns(AddArticleRsp){}
+
+    rpc GetCategoryList(GetCategoryListReq)returns(GetCategoryListRsp){}
+
+    rpc GetCategory(GetCategoryReq)returns(GetCategoryRsp){}
+
+    rpc UpdateCategory(UpdateCategoryReq)returns(UpdateCategoryRsp){}
+
+    rpc DelCategory(DelCategoryReq)returns(DelCategoryRsp){}
+
+    rpc AddCategory(AddCategoryReq)returns(AddCategoryRsp){}
+
+    rpc GetCommentList(GetCommentListReq)returns(GetCommentListRsp){}
+
+    rpc GetComment(GetCommentReq)returns(GetCommentRsp){}
+
+    rpc UpdateComment(UpdateCommentReq)returns(UpdateCommentRsp){}
+
+    rpc DelComment(DelCommentReq)returns(DelCommentRsp){}
+
+    rpc AddComment(AddCommentReq)returns(AddCommentRsp){
+    };
+
+    // @cat:
+    // @name:
+    // @desc:
+    // @error:
+	rpc TestHello1 (TestHello1Req) returns (TestHello1Rsp) {
+	};
+}
+
+enum ErrCode {
+    Nil = 0;
+    // 40000 - 50000
+    ErrArticleNotFound = 40000;
+    ErrCategoryNotFound = 40001;
+    ErrCommentNotFound = 40002;
+}
+
+message ModelArticle{
+    uint64 id = 1;
+    int32  created_at = 2;
+    int32  updated_at = 3;
+    int32  deleted_at = 4;
+
+    // @desc:文章标题
+    string title = 5[(validate.rules).string = {min_len: 1, max_len: 300}];
+    // @desc:文章描述
+    string desc = 6[(validate.rules).string = {min_len: 1, max_len: 900}];
+    // @desc:文章分类
+    uint64 category_id = 7[(validate.rules).uint64 = {gt: 0}];
+    // @desc:文章缩略图
+    string img = 8;
+    // @desc:文章内容
+    string content = 9[(validate.rules).string = {min_len: 1}];
+}
+
+message ModelCategory{
+    uint64 id = 1;
+    int32  created_at = 2;
+    int32  updated_at = 3;
+    int32  deleted_at = 4;
+
+    string name = 5[(validate.rules).string = {min_len: 1, max_len: 300}];
+}
+
+message ModelComment{
+    enum Status {
+        StatusNil = 0;
+        StatusNormal = 1;// 正常
+        StatusReview = 2;// 审核中
+        StatusTakeDown = 3;// 撤下
+    }
+    uint64 id = 1;
+    int32  created_at = 2;
+    int32  updated_at = 3;
+    int32  deleted_at = 4;
+
+    // @desc: 文章
+    uint64 article_id = 5[(validate.rules).uint64 = {gt: 0}];
+    // @desc: 评论用户 系统用户
+    uint64 user_id = 6;
+    // @desc: 评论用户留下的邮箱 非系统用户
+    string user_email = 7;
+
+    // @desc: 评论内容
+    string content = 8[(validate.rules).string = {min_len: 1}];
+
+    // @desc: 评论状态
+    // @ref_to: Comment.Status
+    uint64 status = 9;
+}
+
+message GetArticleListReq{
+    enum ListOption{
+        ListOptionNil = 0;
+        ListOptionCategoryId = 1;
+        ListOptionLikeTitle = 2;
+    }
+    lbconst.ListOption list_option = 1[(validate.rules).message = {required:true}];
+}
+
+message GetArticleListRsp{
+    lbconst.Page page = 1;
+    repeated ModelArticle list = 2;
+}
+
+message GetArticleReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+}
+
+message GetArticleRsp{
+    ModelArticle article = 1;
+}
+
+
+message UpdateArticleReq{
+    ModelArticle article = 1[(validate.rules).message = {required:true}];
+}
+
+message UpdateArticleRsp{
+
+}
+
+
+message DelArticleReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+}
+
+message DelArticleRsp{
+
+}
+
+message AddArticleReq{
+    ModelArticle article = 1[(validate.rules).message = {required:true}];
+}
+
+message AddArticleRsp{
+    ModelArticle article = 1;
+}
+
+message GetCategoryListReq{
+    enum ListOption{
+        ListOptionNil = 0;
+    }
+    lbconst.ListOption list_option = 1[(validate.rules).message = {required:true}];
+}
+
+message GetCategoryListRsp{
+    lbconst.Page page = 1;
+    repeated ModelCategory list = 2;
+}
+
+message GetCategoryReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+}
+
+message GetCategoryRsp{
+    ModelCategory category = 1;
+}
+
+
+message UpdateCategoryReq{
+    ModelCategory category = 1[(validate.rules).message = {required:true}];
+}
+
+message UpdateCategoryRsp{
+}
+
+
+message DelCategoryReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+}
+
+message DelCategoryRsp{
+
+}
+
+message AddCategoryReq{
+    ModelCategory category = 1[(validate.rules).message = {required:true}];
+}
+
+message AddCategoryRsp{
+    ModelCategory category = 1;
+}
+
+message GetCommentListReq{
+    enum ListOption{
+        ListOptionNil = 0;
+    }
+    lbconst.ListOption list_option = 1[(validate.rules).message = {required:true}];
+}
+
+message GetCommentListRsp{
+    lbconst.Page page = 1;
+    repeated ModelComment list = 2;
+}
+
+message GetCommentReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+}
+
+message GetCommentRsp{
+    ModelComment comment = 1;
+}
+
+
+message UpdateCommentReq{
+    ModelComment comment = 1[(validate.rules).message = {required:true}];
+}
+
+message UpdateCommentRsp{
+}
+
+
+message DelCommentReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+}
+
+message DelCommentRsp{
+
+}
+
+message AddCommentReq{
+    ModelComment comment = 1[(validate.rules).message = {required:true}];
+}
+
+message AddCommentRsp{
+    ModelComment comment = 1;
+}
+
+message TestHello1Req{}
+
+message TestHello1Rsp{}
