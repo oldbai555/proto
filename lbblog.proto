@@ -9,6 +9,7 @@ package lbblog;
 
 import "validate.proto";
 import "lbconst.proto";
+import "lbuser.proto";
 
 // 定义 lbblog 服务
 service lbblog {
@@ -43,13 +44,6 @@ service lbblog {
 
     rpc AddComment(AddCommentReq)returns(AddCommentRsp){
     };
-
-    // @cat:
-    // @name:
-    // @desc:
-    // @error:
-	rpc TestHello1 (TestHello1Req) returns (TestHello1Rsp) {
-	};
 }
 
 enum ErrCode {
@@ -126,6 +120,8 @@ message GetArticleListReq{
 message GetArticleListRsp{
     lbconst.Page page = 1;
     repeated ModelArticle list = 2;
+    // key by category_id
+    map<uint64, ModelCategory> category_map = 3;
 }
 
 message GetArticleReq{
@@ -217,6 +213,8 @@ message GetCommentListReq{
 message GetCommentListRsp{
     lbconst.Page page = 1;
     repeated ModelComment list = 2;
+    map<uint64, ModelArticle> article_map = 3;
+    map<uint64, lbuser.ModelUser> user_map = 4;
 }
 
 message GetCommentReq{
@@ -251,7 +249,3 @@ message AddCommentReq{
 message AddCommentRsp{
     ModelComment comment = 1;
 }
-
-message TestHello1Req{}
-
-message TestHello1Rsp{}

@@ -8,6 +8,7 @@ option go_package = "github.com/oldbai555/bgg/lbuser";
 package lbuser;
 
 import "validate.proto";
+import "lbconst.proto";
 
 // 定义 lbuser 服务
 service lbuser {
@@ -20,6 +21,55 @@ service lbuser {
     // @desc: 获取登录用户的信息
     rpc GetLoginUser(GetLoginUserReq)returns(GetLoginUserRsp){
     };
+
+    // @cat:
+    // @name:
+    // @desc:
+    // @error: 更新登陆的用户信息
+    rpc UpdateLoginUserInfo (UpdateLoginUserInfoReq) returns (UpdateLoginUserInfoRsp) {
+    };
+
+    // @cat:
+    // @name:
+    // @desc:
+    // @error:
+    rpc AddUser (AddUserReq) returns (AddUserRsp) {
+    };
+
+    // @cat:
+    // @name:
+    // @desc:
+    // @error:
+    rpc GetUserList (GetUserListReq) returns (GetUserListRsp) {
+    };
+
+    // @cat:
+    // @name:
+    // @desc:
+    // @error:
+    rpc DelUser (DelUserReq) returns (DelUserRsp) {
+    };
+
+    // @cat:
+    // @name:
+    // @desc:
+    // @error:
+    rpc GetUser (GetUserReq) returns (GetUserRsp) {
+    };
+
+    // @cat:
+    // @name:
+    // @desc:
+    // @error:
+    rpc UpdateUserNameWithRole (UpdateUserNameWithRoleReq) returns (UpdateUserNameWithRoleRsp) {
+    };
+
+    // @cat:
+    // @name:
+    // @desc:
+    // @error:
+    rpc ResetPassword (ResetPasswordReq) returns (ResetPasswordRsp) {
+    };
 }
 
 enum ErrCode {
@@ -27,9 +77,14 @@ enum ErrCode {
     // 30000 - 40000
     ErrUserNotFound = 30001;
     ErrPasswordInvalid = 30002;
+    ErrUserExit = 30003;
 }
 
 message ModelUser{
+    enum Role{
+        RoleNil = 0;
+        RoleAdmin = 1;
+    }
     uint64 id = 1;
     int32  created_at = 2;
     int32  updated_at = 3;
@@ -43,6 +98,8 @@ message ModelUser{
     string email = 9;
     string github = 10;
     string desc = 11;
+
+    uint32 role = 12;
 }
 
 message LoginReq{
@@ -71,3 +128,58 @@ message GetLoginUserRsp{
     string github = 4;
     string desc = 5;
 }
+
+message UpdateLoginUserInfoReq{
+    ModelUser user = 1 [(validate.rules).message = {required:true}];
+}
+
+message UpdateLoginUserInfoRsp{}
+
+message AddUserReq{
+    ModelUser user = 1 [(validate.rules).message = {required:true}];
+}
+
+message AddUserRsp{}
+
+message GetUserListReq{
+    enum ListOption {
+        ListOptionNil = 0;
+        ListOptionLikeUsername = 1;
+    }
+    lbconst.ListOption list_option = 1[(validate.rules).message = {required:true}];
+}
+
+message GetUserListRsp{
+    lbconst.Page page = 1;
+    repeated ModelUser list = 2;
+}
+
+message DelUserReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+}
+
+message DelUserRsp{}
+
+message GetUserReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+}
+
+message GetUserRsp{
+    ModelUser user = 1;
+}
+
+message UpdateUserNameWithRoleReq{
+    string username = 1;
+    uint32 role = 2;
+    uint64 id = 3[(validate.rules).uint64 = {gt: 0}];
+}
+
+message UpdateUserNameWithRoleRsp{}
+
+message ResetPasswordReq{
+    uint64 id = 1[(validate.rules).uint64 = {gt: 0}];
+    string old_password = 2[(validate.rules).string = {min_len: 6,max_len:16}];
+    string new_password = 3[(validate.rules).string = {min_len: 6,max_len:16}];
+}
+
+message ResetPasswordRsp{}
