@@ -18,6 +18,5 @@ func TestGenRpc(t *testing.T) {
 }
 
 func TestAddRpc(t *testing.T) {
-	gen.AddRpc("lbuser", "UpdateUserNameWithRole")
-	gen.AddRpc("lbuser", "ResetPassword")
+	gen.AddRpc("lbblog", "GetCategoryList")
 }

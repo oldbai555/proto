@@ -70,6 +70,13 @@ service lbuser {
     // @error:
     rpc ResetPassword (ResetPasswordReq) returns (ResetPasswordRsp) {
     };
+
+    // @cat: front
+    // @name:
+    // @desc:
+    // @error:
+	rpc GetFrontUser (GetFrontUserReq) returns (GetLoginUserRsp) {
+	};
 }
 
 enum ErrCode {
@@ -183,3 +190,5 @@ message ResetPasswordReq{
 }
 
 message ResetPasswordRsp{}
+
+message GetFrontUserReq{}

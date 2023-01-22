@@ -206,6 +206,7 @@ message AddCategoryRsp{
 message GetCommentListReq{
     enum ListOption{
         ListOptionNil = 0;
+        ListOptionArticleId = 1;
     }
     lbconst.ListOption list_option = 1[(validate.rules).message = {required:true}];
 }
