@@ -6,17 +6,21 @@ import (
 )
 
 func TestGenProtoField(t *testing.T) {
-	gen.ProtoField("lbuser")
+	gen.ProtoField("lbwebsocket")
 }
 
 func TestGenProtoModelTableName(t *testing.T) {
-	gen.ModelTableName("lbuser")
+	gen.ModelTableName("lbwebsocket")
 }
 
 func TestGenRpc(t *testing.T) {
-	gen.RpcCode("lbuser")
+	gen.RpcCode("lbwebsocket")
 }
 
 func TestAddRpc(t *testing.T) {
-	gen.AddRpc("lbblog", "GetCategoryList")
+	gen.AddRpc("lbwebsocket", "HandleWs")
+}
+
+func TestInitProto(t *testing.T) {
+	gen.InitProto("lbwebsocket")
 }

@@ -6,7 +6,8 @@ const (
 	GenRpcApiFuncHeaderCode    = "gen_rpc_api_func_header_code.gtpl"
 	GenRpcApiRegisterCode      = "gen_rpc_api_register_code.gtpl"
 	GenRpcServerFuncCode       = "gen_rpc_server_func_code.gtpl"
-	GenRpcClientFuncHeaderCode = "gen_rpc_client_func_header_code.gtpl"
+	GenRpcClientFuncHeaderCode = "gen_rpc_server_func_header_code.gtpl"
 	GenRpcServerStructCode     = "gen_rpc_server_struct_code.gtpl"
 	AddRpc                     = "add_rpc.gtpl"
+	InitProto                  = "init_proto.gtpl"
 )
