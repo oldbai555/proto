@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/oldbai555/server/bgg/{{.ServerName}}/impl"
+	"github.com/oldbai555/bgg/server/{{.ServerName}}/impl"
 )
 
 func main() {
