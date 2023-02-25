@@ -8,6 +8,6 @@ const (
 	GenRpcServerFuncCode       = "gen_rpc_server_func_code.gtpl"
 	GenRpcClientFuncHeaderCode = "gen_rpc_server_func_header_code.gtpl"
 	GenRpcServerStructCode     = "gen_rpc_server_struct_code.gtpl"
-	AddRpc                     = "add_rpc.gtpl"
+	AddRpc                     = "temp_main.gtpl"
 	InitProto                  = "init_proto.gtpl"
 )

@@ -6,11 +6,11 @@ import (
 )
 
 func TestGenProtoField(t *testing.T) {
-	gen.ProtoField("lbwebsocket")
+	gen.ProtoField("lbwebsocket", "../github.com/oldbai555/bgg")
 }
 
 func TestGenProtoModelTableName(t *testing.T) {
-	gen.ModelTableName("lbwebsocket")
+	gen.ModelTableName("lbwebsocket", "../github.com/oldbai555/bgg")
 }
 
 func TestGenRpc(t *testing.T) {

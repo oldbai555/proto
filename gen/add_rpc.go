@@ -6,13 +6,14 @@ import (
 	"github.com/oldbai555/lbtool/utils"
 	"github.com/oldbai555/proto/gen/temp"
 	"github.com/oldbai555/proto/gen/temp/gtpl"
+	"github.com/oldbai555/proto/parse"
 	"os"
 	"strings"
 )
 
 func AddRpc(protoFileName string, rpc string) {
 
-	protoCtx, err := parseProtoCode(protoFileName)
+	protoCtx, err := parse.ProtoCode(protoFileName)
 	if err != nil {
 		log.Errorf("err is %v", err)
 		return
@@ -52,8 +53,8 @@ func AddRpc(protoFileName string, rpc string) {
 	protoCtx.Content = fmt.Sprintf("%s%s", protoCtx.Content, lines.String())
 
 	// 检查文件名字
-	if !strings.HasSuffix(ProtoFileNameSuffix, protoFileName) {
-		protoFileName = protoFileName + ProtoFileNameSuffix
+	if !strings.HasSuffix(parse.ProtoFileNameSuffix, protoFileName) {
+		protoFileName = protoFileName + parse.ProtoFileNameSuffix
 	}
 	_ = os.WriteFile(protoFileName, []byte(protoCtx.Content), 0666)
 }

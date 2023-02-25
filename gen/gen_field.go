@@ -6,16 +6,17 @@ import (
 	"github.com/oldbai555/lbtool/extpkg/pie/pie"
 	"github.com/oldbai555/lbtool/log"
 	"github.com/oldbai555/lbtool/utils"
+	"github.com/oldbai555/proto/parse"
 	"os"
 	"path"
 	"sort"
 	"strings"
 )
 
-func ProtoField(protoFileName string) {
+func ProtoField(protoFileName string, pathDir string) {
 	// step 1: 判断文件是否存在
-	if !strings.HasSuffix(ProtoFileNameSuffix, protoFileName) {
-		protoFileName = protoFileName + ProtoFileNameSuffix
+	if !strings.HasSuffix(parse.ProtoFileNameSuffix, protoFileName) {
+		protoFileName = protoFileName + parse.ProtoFileNameSuffix
 	}
 
 	// step 2: 打开文件
@@ -70,7 +71,7 @@ func ProtoField(protoFileName string) {
 	lines = append(lines, ")")
 
 	// step 6: 构造文件路径
-	var dir = fmt.Sprintf("../github.com/oldbai555/bgg/%s/", strings.TrimSuffix(protoFileName, ".proto"))
+	var dir = path.Join(pathDir, strings.TrimSuffix(protoFileName, ".proto"))
 	utils.CreateDir(dir)
 	var fileName = fmt.Sprintf("%s_field_autogen.go", strings.TrimSuffix(protoFileName, ".proto"))
 

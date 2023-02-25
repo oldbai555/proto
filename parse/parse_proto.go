@@ -1,4 +1,4 @@
-package gen
+package parse
 
 import (
 	"errors"
@@ -33,7 +33,7 @@ func TrimPrefixMessageNameWithModel(msgName string) string {
 }
 
 // 生成表名
-func genTableName(protoFileName, msgName string) string {
+func GenTableName(protoFileName, msgName string) string {
 	return fmt.Sprintf("%s_%s", TrimProtoFileNameSuffix(protoFileName), utils.Camel2UnderScore(TrimPrefixMessageNameWithModel(msgName)))
 }
 
@@ -53,7 +53,7 @@ type ProtoCtx struct {
 	RpcList []*RpcNode
 }
 
-func parseProtoCode(protoFileName string) (*ProtoCtx, error) {
+func ProtoCode(protoFileName string) (*ProtoCtx, error) {
 	var protoCtx = ProtoCtx{
 		RpcMap: make(map[string]*RpcNode),
 	}

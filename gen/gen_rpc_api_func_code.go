@@ -6,13 +6,14 @@ import (
 	"github.com/oldbai555/lbtool/utils"
 	"github.com/oldbai555/proto/gen/temp"
 	"github.com/oldbai555/proto/gen/temp/gtpl"
+	"github.com/oldbai555/proto/parse"
 	"os"
 	"strings"
 )
 
 // 生成接口代码
-func genApiCode(protoFileName string, code *ParseGoCode, protoCtx *ProtoCtx) error {
-	protoFileName = TrimProtoFileNameSuffix(protoFileName)
+func genApiCode(protoFileName string, code *parse.GoCode, protoCtx *parse.ProtoCtx) error {
+	protoFileName = parse.TrimProtoFileNameSuffix(protoFileName)
 	var content strings.Builder
 
 	// step 1: 新文件 需要初始化一下
@@ -80,7 +81,7 @@ func genApiCode(protoFileName string, code *ParseGoCode, protoCtx *ProtoCtx) err
 	defer f.Close()
 
 	// step 5: 追加文件内容
-	err = writeFile(f, content.String())
+	err = parse.WriteFile(f, content.String())
 	if err != nil {
 		log.Errorf("err is %v", err)
 		return err

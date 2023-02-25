@@ -1,4 +1,4 @@
 import (
 	"context"
-	"github.com/oldbai555/bgg/{{.Server}}"
+	"github.com/oldbai555/bgg/client/{{.Server}}"
 )
