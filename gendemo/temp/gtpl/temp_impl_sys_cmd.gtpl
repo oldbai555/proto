@@ -35,9 +35,10 @@ func StartServer() {
 	// 1.监听
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		fmt.Printf("监听异常:%s\n", err)
+		log.Errorf("err is %v", err)
+		return
 	}
-	fmt.Printf("监听端口：%s\n", addr)
+	log.Infof("监听端口：%s", addr)
 	// 2.实例化gRPC
 	s := grpc.NewServer()
 	// 3.在gRPC上注册微服务
