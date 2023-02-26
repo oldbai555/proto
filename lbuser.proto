@@ -75,16 +75,18 @@ service lbuser {
     // @name:
     // @desc:
     // @error:
-	rpc GetFrontUser (GetFrontUserReq) returns (GetLoginUserRsp) {
-	};
+    rpc GetFrontUser (GetFrontUserReq) returns (GetLoginUserRsp) {
+    };
 }
 
 enum ErrCode {
     Nil = 0;
     // 30000 - 40000
-    ErrUserNotFound = 30001;
-    ErrPasswordInvalid = 30002;
-    ErrUserExit = 30003;
+
+    ErrUserNotFound = 30001;//用户找不到
+    ErrPasswordInvalid = 30002;//密码无效
+    ErrUserExit = 30003;// 用户重复存在
+    ErrUserLoginExpired = 30004;// 登陆信息过期
 }
 
 message ModelUser{

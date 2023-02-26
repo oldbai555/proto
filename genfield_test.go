@@ -24,3 +24,7 @@ func TestAddRpc(t *testing.T) {
 func TestInitProto(t *testing.T) {
 	gen.InitProto("lbwebsocket")
 }
+
+func TestGenError(t *testing.T) {
+	gen.ProtoError("lbuser", "../github.com/oldbai555/bgg/client")
+}

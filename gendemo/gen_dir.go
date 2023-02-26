@@ -113,4 +113,22 @@ func GenDir(serverName string) {
 		defer f.Close()
 		_, err = f.WriteString(template)
 	}
+
+	if !utils.FileExists(path.Join(proDir, "impl", "const.go")) {
+		template, err := temp.GenCodeByTemplate(gtpl.GEnImplConst, &temp.TempYaml{
+			ServerName: serverName})
+		if err != nil {
+			log.Errorf("err is %v", err)
+			return
+		}
+
+		// step 7: 创建并写入文件
+		f, err := os.Create(path.Join(proDir, "impl", "const.go"))
+		if err != nil {
+			log.Errorf("err is %v", err)
+			return
+		}
+		defer f.Close()
+		_, err = f.WriteString(template)
+	}
 }

@@ -11,11 +11,12 @@ import (
 )
 
 func TestGenDir(t *testing.T) {
-	var serverName = "lbwebsocket"
+	var serverName = "lbblog"
 	var pathClientDir = "../github.com/oldbai555/bgg/client"
 	gendemo.GenDir(serverName)
 	gen.ProtoField(serverName, pathClientDir)
 	gen.ModelTableName(serverName, pathClientDir)
+	gen.ProtoError(serverName, pathClientDir)
 
 	var rpcCodeDir = path.Join("../github.com/oldbai555/bgg/server/", serverName, "impl")
 

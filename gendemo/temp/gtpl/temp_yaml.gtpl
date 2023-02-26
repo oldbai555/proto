@@ -1,16 +1,16 @@
 server:
   name: "{{.ServerName}}"
-  port: 8003
+  port:
 mysql:
-  addr: "db"
+  addr: "127.0.0.1"
   port: 3306 # 使用对内的mysql接口
-  username: "oldbai"
+  username: "admin"
   password: "123456"
 zipkin:
   addr: "http://127.0.0.1:9411/api/v2/spans"
 redis:
   database: 0
-  host: 'redis' # 使用对内的redis接口
+  host: '127.0.0.1' # 使用对内的redis接口
   port: 6379
 storage:
   type: ""

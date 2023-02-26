@@ -54,6 +54,7 @@ func ProtoField(protoFileName string, pathDir string) {
 	lines = append(lines, fmt.Sprintf("package %s", strings.TrimSuffix(protoFileName, ".proto")))
 	lines = append(lines, "")
 	lines = append(lines, "const (")
+	lines = append(lines, fmt.Sprintf("ServerName = \"%s\"", strings.TrimSuffix(protoFileName, ".proto")))
 
 	uniq := pie.Strings{}
 	for _, v := range fields {
