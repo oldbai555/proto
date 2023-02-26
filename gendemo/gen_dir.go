@@ -6,8 +6,14 @@ import (
 	"github.com/oldbai555/lbtool/utils"
 	"github.com/oldbai555/proto/gendemo/temp"
 	"github.com/oldbai555/proto/gendemo/temp/gtpl"
+	"io/fs"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
+	"strings"
+	"sync"
+	"syscall"
 )
 
 const projectDir = "../github.com/oldbai555/bgg/server"
@@ -131,4 +137,64 @@ func GenDir(serverName string) {
 		defer f.Close()
 		_, err = f.WriteString(template)
 	}
+}
+
+func Exec(rootDir, name string, args ...string) {
+	_ = os.Setenv("GOSUMDB", "off")
+	_ = os.Setenv("GOPROXY", "https://goproxy.cn,https://admin:pinkuai1228@goproxy.aquanliang.com,direct")
+
+	cmd := exec.Command(name, args...)
+	cmd.Dir = rootDir
+	cmd.Env = os.Environ()
+	log.Infof(strings.Join(cmd.Args, " "))
+	log.Infof("run at:%s", cmd.Dir)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+				os.Exit(status.ExitStatus())
+			}
+		}
+	}
+}
+
+func GoFmt(path string) {
+	var w sync.WaitGroup
+	err := filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+		if d == nil {
+			return nil
+		}
+
+		if !d.IsDir() {
+			return nil
+		}
+
+		w.Add(1)
+		go func(path string) {
+			defer w.Done()
+			cmd := exec.Command("gofmt", "-w", ".")
+			cmd.Dir = path
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+
+			log.Infof("run %s", strings.Join(cmd.Args, " "))
+			log.Infof("run on %s", path)
+
+			err = cmd.Run()
+			if err != nil {
+				log.Errorf("err:%v", err)
+				return
+			}
+		}(path)
+
+		return nil
+	})
+	if err != nil {
+		log.Errorf("err:%v", err)
+	}
+
+	w.Wait()
 }

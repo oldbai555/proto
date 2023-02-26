@@ -6,13 +6,15 @@ import (
 	"github.com/oldbai555/proto/gen"
 	"github.com/oldbai555/proto/gendemo"
 	"github.com/oldbai555/proto/parse"
+	"os"
 	"path"
 	"testing"
 )
 
 func TestGenDir(t *testing.T) {
-	var serverName = "lbblog"
-	var pathClientDir = "../github.com/oldbai555/bgg/client"
+	var serverName = "lbuser"
+	var rootDir = "../github.com/oldbai555/bgg"
+	var pathClientDir = path.Join(rootDir, "client")
 	gendemo.GenDir(serverName)
 	gen.ProtoField(serverName, pathClientDir)
 	gen.ModelTableName(serverName, pathClientDir)
@@ -36,4 +38,17 @@ func TestGenDir(t *testing.T) {
 		log.Errorf("err is %v", err)
 		return
 	}
+
+	curDir, err := os.Getwd()
+	if err != nil {
+		log.Errorf("err is %v", err)
+		return
+	}
+	log.Infof("cur dir is %s", curDir)
+	gendemo.Exec(curDir, fmt.Sprintf("./gen.sh go %s.go", serverName))
+
+	gendemo.GoFmt(path.Join(rootDir, "client"))
+	gendemo.GoFmt(path.Join(rootDir, "server"))
+	gendemo.GoFmt(path.Join(rootDir, "lbserver"))
+	gendemo.GoFmt(path.Join(rootDir, "pkg"))
 }
