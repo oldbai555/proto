@@ -12,7 +12,7 @@ import (
 )
 
 func TestGenDir(t *testing.T) {
-	var serverName = "lbuser"
+	var serverName = "lbim"
 	var rootDir = "../github.com/oldbai555/bgg"
 	var pathClientDir = path.Join(rootDir, "client")
 	gendemo.GenDir(serverName)

@@ -1,0 +1,36 @@
+// 指定proto版本
+syntax = "proto3";
+
+// 指定golang包名
+option go_package = "github.com/oldbai555/bgg/client/lbaccount";
+
+// 指定默认包名
+package lbaccount;
+
+// 定义 lbaccount 服务
+service lbaccount {
+}
+
+enum ErrCode {
+    Success = 0;
+    // 60000 - 70000
+    ErrNotFoundAccount = 60001;
+}
+
+// 账号渠道
+enum Channel{
+    ChannelNil = 0;
+    ChannelWxGzh = 1;//微信公众号
+}
+message ModelAccount {
+    uint64 id = 1;
+    int32  created_at = 2;
+    int32  updated_at = 3;
+    int32  deleted_at = 4;
+
+    string sn = 5;
+
+    uint32 channel = 6;
+
+    string name = 7;
+}

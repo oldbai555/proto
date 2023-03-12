@@ -1,0 +1,98 @@
+// 指定proto版本
+syntax = "proto3";
+
+// 指定golang包名
+option go_package = "github.com/oldbai555/bgg/client/lbim";
+
+// 指定默认包名
+package lbim;
+
+// 定义 lbim 服务
+service lbim {
+}
+
+enum ErrCode {
+    Success = 0;
+    // 70000 - 80000
+    ErrNotFoundMessage = 70001;
+}
+
+//消息来源
+enum MessageSource {
+    MessageSourceNil = 0;
+    MessageSourceWxGzh = 1;//微信
+}
+
+enum MessageType{
+    NormalMessage = 0;
+    EventMessage = 1;// 事件消息
+}
+
+//消息
+message ModelMessage{
+    uint64 id = 1;
+    int32  created_at = 2;
+    int32  updated_at = 3;
+    int32  deleted_at = 4;
+
+    string server_msg_id = 5;//服务给过来的消息ID
+    string sys_msg_id = 7;//系统自己生成的消息ID
+
+    uint64 send_at = 8;//发送消息的时间
+
+    string from = 9;// 发送着
+    string to = 10;// 接收者
+
+    Content content = 11;//内容
+
+    uint32 source = 12;// 消息来源
+
+    uint32 type = 13;//消息类型
+}
+
+//消息内容
+message Content{
+    message Text{
+        string content = 1;
+        string translated = 2;// 翻译结果
+    }
+    message Image{
+        string url = 1;
+        string caption = 2; // 描述
+        string file_name = 3;// 名称
+        string format = 4;//格式
+
+    }
+    message Video{
+        string url = 1;
+        string caption = 2; // 描述
+        string file_name = 3;// 名称
+        string format = 4;//格式
+    }
+    message Voice{
+        string url = 1;
+        string caption = 2; // 描述
+        string file_name = 3;// 名称
+        string format = 4;//格式
+        string recognition = 5;//语音识别结果
+    }
+    message Document{
+        string url = 1;
+        string caption = 2; // 描述
+        string file_name = 3;// 名称
+        string format = 4;//格式
+    }
+    message Location {
+        double x = 1; // 地理位置纬度
+        double y = 2; // 地理位置经度
+        double scale = 3;   // 地图缩放大小
+        string label = 4;  // 地理位置信息
+    }
+
+    Text text = 1;
+    Image image = 2;
+    Video video = 3;
+    Voice voice = 4;
+    Document document = 5;
+    Location location = 6;
+}

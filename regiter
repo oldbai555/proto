@@ -1,0 +1,6 @@
+lbconst 20000 - 30000
+lbuser 30000 - 40000
+lbblog 40000 - 50000
+lbcustomer 50000 - 60000
+lbaccount 60000 - 70000
+lbim 70000 - 80000
